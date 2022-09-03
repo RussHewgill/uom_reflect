@@ -340,3 +340,157 @@ pub mod marker {
     impl_from!(ConstituentConcentrationKind, Kind);
     impl_from!(Kind, ConstituentConcentrationKind);
 }
+
+impl<D, U> bevy_reflect::GetTypeRegistration for Quantity<D, U, f32>
+where
+    D: Dimension + ?Sized + Send + Sync + 'static,
+    U: Units<f32> + ?Sized + Send + Sync + 'static,
+    // V: ::uom::num::Num + ::uom::Conversion<V> + Send + Sync + 'static,
+{
+    fn get_type_registration() -> bevy_reflect::TypeRegistration {
+        let mut registration = bevy_reflect::TypeRegistration::of::<Quantity<D, U, f32>>();
+        registration.insert::<bevy_reflect::ReflectFromPtr>(bevy_reflect::FromType::<
+            Quantity<D, U, f32>,
+        >::from_type());
+        registration
+    }
+}
+impl<D, U> bevy_reflect::Typed for Quantity<D, U, f32>
+where
+    D: Dimension + ?Sized + Send + Sync + 'static,
+    U: Units<f32> + ?Sized + Send + Sync + 'static,
+    // V: ::uom::num::Num + ::uom::Conversion<V> + Send + Sync + 'static,
+{
+    fn type_info() -> &'static bevy_reflect::TypeInfo {
+        static CELL: bevy_reflect::utility::NonGenericTypeInfoCell =
+            bevy_reflect::utility::NonGenericTypeInfoCell::new();
+        CELL.get_or_set(|| {
+            let fields: [bevy_reflect::NamedField; 1usize] =
+                [bevy_reflect::NamedField::new::<u32, _>("a")];
+            let info = bevy_reflect::StructInfo::new::<Self>(&fields);
+            bevy_reflect::TypeInfo::Struct(info)
+        })
+    }
+}
+
+// impl<D, U, V> bevy_reflect::Struct for Quantity<D, U, V>
+impl<D, U> bevy_reflect::Struct for Quantity<D, U, f32>
+where
+    D: Dimension + ?Sized + Send + Sync + 'static,
+    U: Units<f32> + ?Sized + Send + Sync + 'static,
+    // V: ::uom::num::Num + ::uom::Conversion<V> + Reflect + Send + Sync + 'static,
+{
+    fn field(&self, name: &str) -> Option<&dyn bevy_reflect::Reflect> {
+        match name {
+            "value" => Some(&self.value),
+            _ => None,
+        }
+    }
+    fn field_mut(&mut self, name: &str) -> Option<&mut dyn bevy_reflect::Reflect> {
+        match name {
+            "value" => Some(&mut self.value),
+            _ => None,
+        }
+    }
+    fn field_at(&self, index: usize) -> Option<&dyn bevy_reflect::Reflect> {
+        match index {
+            0usize => Some(&self.value),
+            _ => None,
+        }
+    }
+    fn field_at_mut(&mut self, index: usize) -> Option<&mut dyn bevy_reflect::Reflect> {
+        match index {
+            0usize => Some(&mut self.value),
+            _ => None,
+        }
+    }
+    fn name_at(&self, index: usize) -> Option<&str> {
+        match index {
+            0usize => Some("value"),
+            _ => None,
+        }
+    }
+    fn field_len(&self) -> usize {
+        1usize
+    }
+    fn iter_fields(&self) -> bevy_reflect::FieldIter {
+        bevy_reflect::FieldIter::new(self)
+    }
+    fn clone_dynamic(&self) -> bevy_reflect::DynamicStruct {
+        let mut dynamic = bevy_reflect::DynamicStruct::default();
+        dynamic.set_name(self.type_name().to_string());
+        dynamic.insert_boxed("value", self.value.clone_value());
+        dynamic
+    }
+}
+
+use bevy_reflect::prelude::*;
+
+impl<D, U> Reflect for Quantity<D, U, f32>
+where
+    D: Dimension + ?Sized + Send + Sync + 'static,
+    U: Units<f32> + ?Sized + Send + Sync + 'static,
+    // V: ::uom::num::Num + ::uom::Conversion<V> + Send + Sync + 'static,
+{
+    #[inline]
+    fn type_name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+    #[inline]
+    fn get_type_info(&self) -> &'static bevy_reflect::TypeInfo {
+        <Self as bevy_reflect::Typed>::type_info()
+    }
+    #[inline]
+    fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
+        self
+    }
+    #[inline]
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    #[inline]
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+    #[inline]
+    fn as_reflect(&self) -> &dyn Reflect {
+        self
+    }
+    #[inline]
+    fn as_reflect_mut(&mut self) -> &mut dyn Reflect {
+        self
+    }
+    #[inline]
+    fn clone_value(&self) -> Box<dyn Reflect> {
+        Box::new(Struct::clone_dynamic(self))
+    }
+    #[inline]
+    fn set(&mut self, value: Box<dyn Reflect>) -> Result<(), Box<dyn Reflect>> {
+        *self = value.take()?;
+        Ok(())
+    }
+    #[inline]
+    fn apply(&mut self, value: &dyn Reflect) {
+        if let bevy_reflect::ReflectRef::Struct(struct_value) = value.reflect_ref() {
+            for (i, value) in struct_value.iter_fields().enumerate() {
+                let name = struct_value.name_at(i).unwrap();
+                Struct::field_mut(self, name).map(|v| v.apply(value));
+            }
+        } else {
+            // ::core::panicking::panic_fmt(::core::fmt::Arguments::new_v1(
+            //     &["Attempted to apply non-struct type to struct type."],
+            //     &[],
+            // ));
+            panic!();
+        }
+    }
+    fn reflect_ref(&self) -> bevy_reflect::ReflectRef {
+        bevy_reflect::ReflectRef::Struct(self)
+    }
+    fn reflect_mut(&mut self) -> bevy_reflect::ReflectMut {
+        bevy_reflect::ReflectMut::Struct(self)
+    }
+    fn reflect_partial_eq(&self, value: &dyn Reflect) -> Option<bool> {
+        bevy_reflect::struct_partial_eq(self, value)
+    }
+}
