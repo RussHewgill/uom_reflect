@@ -341,6 +341,8 @@ pub mod marker {
     impl_from!(Kind, ConstituentConcentrationKind);
 }
 
+use bevy_reflect::prelude::*;
+
 impl<D, U> bevy_reflect::GetTypeRegistration for Quantity<D, U, f32>
 where
     D: Dimension + ?Sized + Send + Sync + 'static,
@@ -424,8 +426,6 @@ where
     }
 }
 
-use bevy_reflect::prelude::*;
-
 impl<D, U> Reflect for Quantity<D, U, f32>
 where
     D: Dimension + ?Sized + Send + Sync + 'static,
@@ -492,5 +492,28 @@ where
     }
     fn reflect_partial_eq(&self, value: &dyn Reflect) -> Option<bool> {
         bevy_reflect::struct_partial_eq(self, value)
+    }
+}
+
+impl<D, U> bevy_reflect::FromReflect for Quantity<D, U, f32>
+where
+    D: Dimension + ?Sized + Send + Sync + 'static,
+    U: Units<f32> + ?Sized + Send + Sync + 'static,
+{
+    fn from_reflect(reflect: &dyn Reflect) -> Option<Self> {
+        if let bevy_reflect::ReflectRef::Struct(__ref_struct) = reflect.reflect_ref() {
+            Some(Self {
+                dimension: Default::default(),
+                units: Default::default(),
+                value: (|| {
+                    <f32 as bevy_reflect::FromReflect>::from_reflect(bevy_reflect::Struct::field(
+                        __ref_struct,
+                        "value",
+                    )?)
+                })()?,
+            })
+        } else {
+            None
+        }
     }
 }
